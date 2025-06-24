@@ -14,7 +14,3 @@ COPY . .
 
 # Expose FastAPI default port
 EXPOSE 8000
-
-COPY db_wait.py .
-
-CMD ["sh", "-c", "python db_wait.py && uvicorn app:app --host 0.0.0.0 --port 8000 --reload"]

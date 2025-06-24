@@ -1,9 +1,12 @@
-from fastapi import FastAPI
-from config import Base, engine
-from routers import usuario
-
-app = FastAPI()
+from fastapi import FastAPI, Request
+from routers import usuario as usuario_router
+from models import usuario as usuario_model
+from config import engine, Base
 
 Base.metadata.create_all(bind=engine)
 
-#app.include_router(usuario.router, prefix="/usuarios")
+# Crear instancia de FastAPI
+app = FastAPI()
+
+# Registrar rutas
+app.include_router(usuario_router.router, prefix="/usuarios")

@@ -7,3 +7,6 @@ bcrypt
 passlib   # For password hashing
 cryptography
 dotenv
+slowapi
+email-validator
+pycryptodome

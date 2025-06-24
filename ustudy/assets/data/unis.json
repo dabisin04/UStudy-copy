@@ -1,0 +1,38 @@
+[
+  {
+    "id": "unilibre",
+    "nombre": "Universidad Libre",
+    "descripcion": "Universidad privada, laica, con seccional en Barranquilla. Programas de pregrado, posgrado y acreditación de alta calidad.",
+    "sedes": ["Barranquilla"],
+    "contacto": {
+      "telefono": "01 8000 180560",
+      "direccion": "Sede Km. 7 Vía Antigua Puerto Colombia, Barranquilla",
+      "email": ""
+    },
+    "logo": "https://toppng.com/public/uploads/preview/universidad-libre-vector-logo-free-download-11574018403cpyqgccfh9.png"
+  },
+  {
+    "id": "unisimon",
+    "nombre": "Universidad Simón Bolívar",
+    "descripcion": "Fundada en 1972, acreditada institucionalmente con amplia oferta académica en Barranquilla y Cúcuta.",
+    "sedes": ["Barranquilla", "Cúcuta"],
+    "contacto": {
+      "telefono": "+57 (605) 344 4333",
+      "direccion": "Carrera 59 No. 59‑65, Barranquilla",
+      "email": ""
+    },
+    "logo": "https://www.icontec.org/wp-content/uploads/2022/01/20200319194657_0.jpg"
+  },
+  {
+    "id": "iub",
+    "nombre": "Institución Universitaria de Barranquilla",
+    "descripcion": "Antiguamente ITSA, institución distrital con alta calidad, más de 30 programas y varias sedes en Barranquilla y Soledad.",
+    "sedes": ["Barranquilla", "Soledad"],
+    "contacto": {
+      "telefono": "+57 (605) 311 2370",
+      "direccion": "Cra 45 No. 48‑31 y Calle 42 No. 45‑22, Barranquilla",
+      "email": ""
+    },
+    "logo": "https://scontent.fpei3-1.fna.fbcdn.net/v/t39.30808-1/319872063_1581812332270146_1236034027303952736_n.jpg?stp=dst-jpg_s200x200_tt6&_nc_cat=109&ccb=1-7&_nc_sid=2d3e12&_nc_ohc=2S9weEpBOBgQ7kNvwE1R4G0&_nc_oc=Adl0MmhQKf8aOPIXwezyD-CeYgu6S7ju-Wtz902B4Vpy5Ic9N3wYFUGWo4xFAzQUimmC6_EHDQKVmMeDcao3cB48&_nc_zt=24&_nc_ht=scontent.fpei3-1.fna&_nc_gid=qsXxfV4Py8P4B6EAX-tHCw&oh=00_AfOW3F8LlEX5FYd-NayChFB6twCzzKaRafv1YUpYd2Ht5w&oe=685FB316"
+  }
+]
