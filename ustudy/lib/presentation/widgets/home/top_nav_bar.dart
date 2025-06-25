@@ -18,7 +18,7 @@ class TopNavbar extends StatelessWidget {
       color: Colors.transparent,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: List.generate(tabs.length, (index) {
           final isActive = currentIndex == index;
           return GestureDetector(

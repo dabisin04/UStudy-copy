@@ -4,33 +4,67 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ustudy/core/styles/apptheme.dart';
 
 import 'package:ustudy/domain/repositories/usuario.dart';
+import 'package:ustudy/domain/repositories/estado_psicologico.dart';
 
 import 'package:ustudy/infrastructure/adapters/usuario.dart';
+import 'package:ustudy/infrastructure/adapters/estado_psicologico.dart';
 
 import 'package:ustudy/presentation/blocs/auth/auth_bloc.dart';
 import 'package:ustudy/presentation/blocs/auth/auth_event.dart';
 import 'package:ustudy/presentation/blocs/auth/auth_state.dart';
-import 'package:ustudy/presentation/blocs/usuario_bloc.dart';
+import 'package:ustudy/presentation/blocs/usuario/usuario_bloc.dart';
+import 'package:ustudy/presentation/blocs/estado_psicologico/estado_psicologico_bloc.dart';
+import 'package:ustudy/presentation/blocs/chat/chat_bloc.dart';
+
+import 'package:ustudy/core/services/chat_service.dart';
 
 import 'package:ustudy/presentation/screens/splash.dart';
 import 'package:ustudy/presentation/screens/auth/login.dart';
 import 'package:ustudy/presentation/screens/auth/register.dart';
 import 'package:ustudy/presentation/screens/home.dart';
+import 'package:ustudy/presentation/screens/resources/article_webview.dart';
+import 'package:ustudy/presentation/screens/resources/resources.dart';
+import 'package:ustudy/presentation/screens/formulario/formulario.dart';
 import 'package:ustudy/presentation/screens/uni/select_u.dart';
 
 void main() {
-  runApp(const UStudyApp());
+  final usuarioRepository = UsuarioRepositoryImpl();
+  final estadoPsicologicoRepository = EstadoPsicologicoRepositoryImpl();
+  final chatEmocionalRepository = ChatEmocionalService();
+
+  runApp(
+    UStudyApp(
+      usuarioRepository: usuarioRepository,
+      estadoPsicologicoRepository: estadoPsicologicoRepository,
+      chatEmocionalRepository: chatEmocionalRepository,
+    ),
+  );
 }
 
 class UStudyApp extends StatelessWidget {
-  const UStudyApp({super.key});
+  final UsuarioRepository usuarioRepository;
+  final EstadoPsicologicoRepository estadoPsicologicoRepository;
+  final ChatEmocionalService chatEmocionalRepository;
+
+  const UStudyApp({
+    super.key,
+    required this.usuarioRepository,
+    required this.estadoPsicologicoRepository,
+    required this.chatEmocionalRepository,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final usuarioRepository = UsuarioRepositoryImpl();
-
-    return RepositoryProvider<UsuarioRepository>.value(
-      value: usuarioRepository,
+    return MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider<UsuarioRepository>.value(value: usuarioRepository),
+        RepositoryProvider<EstadoPsicologicoRepository>.value(
+          value: estadoPsicologicoRepository,
+        ),
+        RepositoryProvider<ChatEmocionalService>.value(
+          value: chatEmocionalRepository,
+        ),
+      ],
       child: MultiBlocProvider(
         providers: [
           BlocProvider<AuthBloc>(
@@ -39,6 +73,10 @@ class UStudyApp extends StatelessWidget {
           BlocProvider<UsuarioBloc>(
             create: (_) => UsuarioBloc(usuarioRepository),
           ),
+          BlocProvider<EstadoPsicologicoBloc>(
+            create: (_) => EstadoPsicologicoBloc(estadoPsicologicoRepository),
+          ),
+          BlocProvider<ChatEmocionalBloc>(create: (_) => ChatEmocionalBloc()),
         ],
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
@@ -57,9 +95,20 @@ class UStudyApp extends StatelessWidget {
                   localId: authState.usuario.localId,
                 );
               } else {
-                return const LoginScreen(); // fallback en caso de no estar logueado
+                return const LoginScreen();
               }
             },
+            '/resources': (_) => const ResourcesScreen(),
+            '/article_webview': (context) {
+              final args =
+                  ModalRoute.of(context)!.settings.arguments
+                      as Map<String, String>;
+              return ArticleWebViewScreen(
+                url: args['url']!,
+                title: args['title']!,
+              );
+            },
+            '/formulario': (_) => const FormularioPsicologicoPage(),
           },
         ),
       ),

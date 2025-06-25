@@ -10,3 +10,6 @@ dotenv
 slowapi
 email-validator
 pycryptodome
+openai
+pydantic
+requests

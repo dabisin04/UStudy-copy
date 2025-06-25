@@ -2,15 +2,14 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:ustudy/presentation/blocs/usuario_bloc.dart';
-import 'package:ustudy/presentation/blocs/usuario_event.dart';
-import 'package:ustudy/presentation/blocs/usuario_state.dart';
+import 'package:ustudy/presentation/blocs/usuario/usuario_bloc.dart';
+import 'package:ustudy/presentation/blocs/usuario/usuario_event.dart';
+import 'package:ustudy/presentation/blocs/usuario/usuario_state.dart';
 
 class UniversitySelectionScreen extends StatefulWidget {
   final String localId; // requerido para actualizar uId
 
-  const UniversitySelectionScreen({Key? key, required this.localId})
-    : super(key: key);
+  const UniversitySelectionScreen({super.key, required this.localId});
 
   @override
   State<UniversitySelectionScreen> createState() =>

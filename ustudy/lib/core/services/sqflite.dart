@@ -52,14 +52,23 @@ class SQLiteService {
         completado INTEGER NOT NULL DEFAULT 0,
         last_modified TEXT NOT NULL,
         sync_status TEXT NOT NULL,
+        prioridad TEXT,
+        fecha_recordatorio TEXT,
+        origen TEXT,
         FOREIGN KEY(usuario_local_id) REFERENCES usuarios(local_id) ON DELETE CASCADE
       );
     ''');
 
-    await db.execute('CREATE INDEX idx_usuario_local_id ON tareas(usuario_local_id);');
+    await db.execute(
+      'CREATE INDEX idx_usuario_local_id ON tareas(usuario_local_id);',
+    );
   }
 
-  static Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+  static Future<void> _onUpgrade(
+    Database db,
+    int oldVersion,
+    int newVersion,
+  ) async {
     // Aquí puedes manejar migraciones en el futuro
     if (oldVersion < newVersion) {
       // migraciones necesarias

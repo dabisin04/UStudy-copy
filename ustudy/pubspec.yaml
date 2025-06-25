@@ -18,6 +18,10 @@ dependencies:
   encrypt: ^5.0.3
   http: ^1.4.0
   shared_preferences: ^2.5.3
+  url_launcher: ^6.3.1
+  webview_flutter: ^4.13.0
+  webview_flutter_android: ^4.7.0
+  webview_flutter_platform_interface: ^2.13.1
 
 dev_dependencies:
   flutter_test:
@@ -32,3 +36,4 @@ flutter:
   assets:
     - assets/data/unis.json
     - assets/logo.png
+    - assets/data/preguntas_ia.json

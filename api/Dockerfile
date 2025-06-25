@@ -14,3 +14,6 @@ COPY . .
 
 # Expose FastAPI default port
 EXPOSE 8000
+
+# Ejecutar migración al iniciar
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]

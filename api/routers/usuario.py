@@ -40,7 +40,6 @@ class UsuarioOut(BaseModel):
 
     class Config:
         from_attributes = True
-        orm_mode = True
 
 class UsuarioUpdate(BaseModel):
     nombre: Optional[str] = None
@@ -52,6 +51,9 @@ class PasswordUpdate(BaseModel):
 
 class UIdUpdate(BaseModel):
     u_id: str
+
+    class Config:
+        from_attributes = True
 
 # ------------------ RUTAS ------------------
 
