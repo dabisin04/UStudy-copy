@@ -19,9 +19,11 @@ class EnviarMensajeChat extends ChatEmocionalEvent {
 
 class CargarHistorialChat extends ChatEmocionalEvent {
   final String usuarioId;
+  final int offset;
+  final int limit;
 
-  const CargarHistorialChat(this.usuarioId);
+  const CargarHistorialChat(this.usuarioId, {this.offset = 0, this.limit = 10});
 
   @override
-  List<Object?> get props => [usuarioId];
+  List<Object?> get props => [usuarioId, offset, limit];
 }

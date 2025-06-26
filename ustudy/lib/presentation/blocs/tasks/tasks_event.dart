@@ -66,4 +66,24 @@ class CompletarTarea extends TareaEvent {
   List<Object?> get props => [tareaId, completada];
 }
 
-class SincronizarTareas extends TareaEvent {}
+class SincronizarTareas extends TareaEvent {
+  const SincronizarTareas();
+}
+
+class SincronizarDesdeServidor extends TareaEvent {
+  final String usuarioId;
+
+  const SincronizarDesdeServidor(this.usuarioId);
+
+  @override
+  List<Object?> get props => [usuarioId];
+}
+
+class SincronizacionBidireccional extends TareaEvent {
+  final String usuarioId;
+
+  const SincronizacionBidireccional(this.usuarioId);
+
+  @override
+  List<Object?> get props => [usuarioId];
+}

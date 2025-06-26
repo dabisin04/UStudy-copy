@@ -5,6 +5,7 @@ class SessionService {
   static const String _remoteIdKey = 'usuario_remote_id';
   static const String _userNombreKey = 'usuario_nombre';
   static const String _userCorreoKey = 'usuario_correo';
+  static const String _userUIdKey = 'usuario_u_id';
 
   /// Guarda los datos del usuario en sesión
   static Future<void> saveUserSession({
@@ -12,6 +13,7 @@ class SessionService {
     required String? remoteId,
     required String nombre,
     required String correo,
+    String? uId,
   }) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_localIdKey, localId);
@@ -20,6 +22,9 @@ class SessionService {
     }
     await prefs.setString(_userNombreKey, nombre);
     await prefs.setString(_userCorreoKey, correo);
+    if (uId != null) {
+      await prefs.setString(_userUIdKey, uId);
+    }
   }
 
   /// Elimina todos los datos de sesión
@@ -29,6 +34,7 @@ class SessionService {
     await prefs.remove(_remoteIdKey);
     await prefs.remove(_userNombreKey);
     await prefs.remove(_userCorreoKey);
+    await prefs.remove(_userUIdKey);
   }
 
   /// Verifica si hay sesión activa
@@ -47,6 +53,7 @@ class SessionService {
       'remoteId': prefs.getString(_remoteIdKey) ?? '',
       'nombre': prefs.getString(_userNombreKey)!,
       'correo': prefs.getString(_userCorreoKey)!,
+      'uId': prefs.getString(_userUIdKey) ?? '',
     };
   }
 }

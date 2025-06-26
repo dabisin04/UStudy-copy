@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ustudy/presentation/blocs/auth/auth_bloc.dart';
-import 'package:ustudy/presentation/blocs/auth/auth_event.dart';
+import 'package:ustudy/presentation/blocs/auth/auth_state.dart';
 import 'package:ustudy/presentation/widgets/home/chat_icon.dart';
 import 'package:ustudy/presentation/widgets/home/chat_summary.dart';
 import 'package:ustudy/presentation/widgets/home/top_nav_bar.dart';
+import 'package:ustudy/presentation/widgets/home/announcements.dart';
 import 'package:ustudy/presentation/screens/chat/talkiebot.dart';
 import 'package:ustudy/presentation/screens/resources/resources.dart';
+import 'package:ustudy/presentation/screens/tasks/tasks.dart';
+import 'package:ustudy/presentation/screens/profile/profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -44,8 +47,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final usuario = context.read<AuthBloc>().usuarioActual;
-
     final List<Widget> pages = [
       // Home
       SingleChildScrollView(
@@ -60,7 +61,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
             ),
-            ChatSummaryCard(), // <-- No requiere parámetro
+            ChatSummaryCard(),
+            SizedBox(height: 24),
+            AnnouncementsWidget(),
           ],
         ),
       ),
@@ -69,10 +72,17 @@ class _HomeScreenState extends State<HomeScreen> {
       const ResourcesScreen(),
 
       // Homework
-      const Center(child: Text('Homework Page')),
+      BlocBuilder<AuthBloc, AuthState>(
+        builder: (context, state) {
+          if (state is AuthAuthenticated) {
+            return TareasScreen(usuarioId: state.usuario.localId);
+          }
+          return const Center(child: Text("Please log in."));
+        },
+      ),
 
       // Profile
-      const Center(child: Text('Profile Page')),
+      const ProfileScreen(),
     ];
 
     return Scaffold(
@@ -83,28 +93,6 @@ class _HomeScreenState extends State<HomeScreen> {
               currentIndex: _currentTabIndex,
               onTabSelected: _onTabSelected,
               tabs: const ['Home', 'Resources', 'Homework', 'Profile'],
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                children: [
-                  Text(
-                    'Welcome, ${usuario?.nombre ?? 'User'}',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.logout),
-                    onPressed: () {
-                      context.read<AuthBloc>().add(AuthLogoutRequested());
-                      Navigator.pushReplacementNamed(context, '/login');
-                    },
-                  ),
-                ],
-              ),
             ),
             const Divider(height: 1),
             Expanded(

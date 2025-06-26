@@ -117,9 +117,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               }
                               context.read<AuthBloc>().add(
                                 AuthRegisterRequested(
-                                  nombre: _nombreController.text,
-                                  correo: _correoController.text,
-                                  contrasena: _contrasenaController.text,
+                                  _nombreController.text,
+                                  _correoController.text,
+                                  _contrasenaController.text,
                                 ),
                               );
                             },

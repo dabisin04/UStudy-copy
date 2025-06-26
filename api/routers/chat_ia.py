@@ -3,6 +3,7 @@ import requests
 import uuid
 import json
 import re
+import logging
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from datetime import datetime
@@ -15,6 +16,14 @@ from models.tareas import Tarea
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# Configurar logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions"
 
@@ -30,26 +39,70 @@ def get_db():
 
 # ------------------ HELPERS ------------------
 def obtener_ultimo_estado_psicologico(db: Session, usuario_id: str):
-    return db.query(EstadoPsicologico)\
+    logger.info(f"Obteniendo último estado psicológico para usuario: {usuario_id}")
+    estado = db.query(EstadoPsicologico)\
         .filter_by(usuario_id=usuario_id)\
         .order_by(EstadoPsicologico.fecha.desc())\
         .first()
+    logger.info(f"Estado encontrado: {estado.nivel if estado else 'None'}")
+    return estado
 
-def obtener_historial_chat(db: Session, usuario_id: str, limite=10):
-    return db.query(HistorialChat)\
+def obtener_historial_chat(db: Session, usuario_id: str, offset=0, limit=10):
+    logger.info(f"Obteniendo historial de chat para usuario: {usuario_id}, offset: {offset}, limit: {limit}")
+    historial = db.query(HistorialChat)\
         .filter_by(usuario_id=usuario_id)\
         .order_by(HistorialChat.fecha.desc())\
-        .limit(limite)\
+        .offset(offset)\
+        .limit(limit)\
         .all()[::-1]  # orden cronológico
+    logger.info(f"Historial obtenido: {len(historial)} mensajes")
+    return historial
 
 def extraer_bloque_tareas(contenido: str) -> list:
+    logger.info("Extrayendo bloque de tareas del contenido")
     match = re.search(r'Bloque de tareas sugeridas:\s*(\[[\s\S]+?\])', contenido)
     if match:
         try:
-            return json.loads(match.group(1))
-        except:
+            tareas = json.loads(match.group(1))
+            logger.info(f"Tareas extraídas: {len(tareas)} tareas")
+            return tareas
+        except Exception as e:
+            logger.error(f"Error al parsear tareas: {e}")
             return []
+    logger.info("No se encontraron tareas en el contenido")
     return []
+
+def ya_recomendo_formulario(historial: list) -> bool:
+    logger.info("Verificando si ya se recomendó el formulario")
+    for h in historial:
+        # Verificar el campo booleano primero
+        if hasattr(h, 'recomendacion_formulario') and h.recomendacion_formulario:
+            logger.info("Ya se recomendó el formulario previamente (campo booleano)")
+            return True
+        
+        # Verificar frases variadas en el texto
+        respuesta_lower = h.respuesta_ia.lower()
+        frases_recomendacion = [
+            "completar la evaluación emocional",
+            "evaluación emocional",
+            "cuestionario emocional",
+            "formulario de evaluación",
+            "evaluación inicial",
+            "cuestionario inicial",
+            "evaluación psicológica",
+            "formulario psicológico",
+            "evaluar tu estado emocional",
+            "completar el formulario",
+            "realizar la evaluación"
+        ]
+        
+        for frase in frases_recomendacion:
+            if frase in respuesta_lower:
+                logger.info(f"Ya se recomendó el formulario previamente (frase: {frase})")
+                return True
+                
+    logger.info("No se ha recomendado el formulario previamente")
+    return False
 
 # ------------------ RUTA PRINCIPAL ------------------
 @router.post("/chat/ia")
@@ -57,15 +110,24 @@ async def conversar_con_ia(payload: Dict[str, Any], db: Session = Depends(get_db
     usuario_id = payload.get("usuario_id")
     mensaje_usuario = payload.get("mensaje")
 
+    logger.info(f"Conversación con IA iniciada para usuario: {usuario_id}")
+    logger.info(f"Mensaje del usuario: {mensaje_usuario}")
+
     if not usuario_id or not mensaje_usuario:
+        logger.error("usuario_id o mensaje faltantes")
         raise HTTPException(status_code=400, detail="usuario_id y mensaje son requeridos.")
 
     estado = obtener_ultimo_estado_psicologico(db, usuario_id)
     historial = obtener_historial_chat(db, usuario_id)
+    recomendo_formulario_previamente = ya_recomendo_formulario(historial)
     historial_texto = "\n".join([
         f"Usuario: {h.mensaje_usuario}\nIA: {h.respuesta_ia}"
         for h in historial
     ])
+
+    logger.info(f"Estado psicológico: {estado.nivel if estado else 'None'}")
+    logger.info(f"Historial: {len(historial)} mensajes")
+    logger.info(f"Ya recomendó formulario: {recomendo_formulario_previamente}")
 
     # Construir prompt base
     prompt_base = f"""
@@ -89,14 +151,18 @@ Actúa como un asistente terapéutico especializado en salud mental y bienestar 
 4. "No puedo ayudarte con ese tema, pero estoy aquí para hablar contigo sobre lo que sientes y cómo te afecta."
 5. "Mi propósito no es resolver ejercicios ni responder preguntas técnicas, pero puedo escucharte si necesitas desahogarte."
 
+✏️ Asegúrate de que tus respuestas varíen en longitud, estructura y tono. Algunas pueden ser breves y directas, otras un poco más reflexivas. No uses lenguaje robótico ni repitas frases.
+
+🎯 Evita listas, repeticiones o respuestas artificiales. Sé humano, cercano, realista.
+
 📜 Historial de conversación reciente:
 {historial_texto}
 
 Usuario: {mensaje_usuario}
 """
 
-    # Añadir información del estado si existe
     if estado:
+        logger.info("Construyendo prompt con estado psicológico")
         prompt = prompt_base + f"""
 
 📋 Estado emocional del usuario:
@@ -115,15 +181,20 @@ Bloque de tareas sugeridas:
 ]
 """
     else:
-        prompt = prompt_base + """
+        if not recomendo_formulario_previamente:
+            logger.info("Construyendo prompt con recomendación de formulario")
+            prompt = prompt_base + """
 
-⚠️ IMPORTANTE: El usuario aún no ha completado su evaluación emocional inicial. 
-Responde de manera empática y útil, pero al final de tu respuesta, de manera amigable y sin ser insistente, sugiérele que complete la evaluación emocional para poder brindarle un apoyo más personalizado y efectivo.
-
-Ejemplo de sugerencia: "Por cierto, para poder brindarte un apoyo más personalizado, te recomiendo completar la evaluación emocional cuando tengas un momento. Esto me ayudará a entender mejor cómo te sientes y ofrecerte sugerencias más específicas para tu bienestar."
+⚠️ El usuario aún no ha completado su evaluación emocional inicial. 
+Responde de forma empática, y al final incluye esta sugerencia (marcada para el sistema): 
+[RECOMENDAR_FORMULARIO]
 """
+        else:
+            logger.info("Construyendo prompt sin recomendación (ya se recomendó)")
+            prompt = prompt_base
 
     try:
+        logger.info("Enviando petición a DeepSeek")
         response = requests.post(
             DEEPSEEK_API_URL,
             headers={"Authorization": f"Bearer {DEEPSEEK_API_KEY}"},
@@ -138,24 +209,36 @@ Ejemplo de sugerencia: "Por cierto, para poder brindarte un apoyo más personali
             }
         )
 
+        logger.info(f"Respuesta de DeepSeek recibida. Status: {response.status_code}")
+        
+        if response.status_code != 200:
+            logger.error(f"Error en DeepSeek API: {response.status_code} - {response.text}")
+            raise HTTPException(status_code=500, detail=f"Error en DeepSeek API: {response.text}")
+
         response.raise_for_status()
         data = response.json()
         contenido_ia = data["choices"][0]["message"]["content"]
+        logger.info(f"Contenido de IA recibido: {contenido_ia[:100]}...")
 
-        # Guardar historial
+        mostrar_sugerencia_formulario = "[RECOMENDAR_FORMULARIO]" in contenido_ia
+        contenido_ia = contenido_ia.replace("[RECOMENDAR_FORMULARIO]", "").strip()
+        logger.info(f"Mostrar sugerencia formulario: {mostrar_sugerencia_formulario}")
+
+        logger.info("Guardando historial en BD")
         nuevo_chat = HistorialChat(
             id=str(uuid.uuid4()),
             usuario_id=usuario_id,
             mensaje_usuario=mensaje_usuario,
             respuesta_ia=contenido_ia,
-            fecha=datetime.utcnow()
+            fecha=datetime.utcnow(),
+            recomendacion_formulario=mostrar_sugerencia_formulario
         )
         db.add(nuevo_chat)
 
-        # Detectar y guardar tareas solo si el usuario tiene estado psicológico
         tareas = []
         if estado:
             tareas = extraer_bloque_tareas(contenido_ia)
+            logger.info(f"Guardando {len(tareas)} tareas en BD")
             for t in tareas:
                 tarea = Tarea(
                     id=str(uuid.uuid4()),
@@ -172,20 +255,70 @@ Ejemplo de sugerencia: "Por cierto, para poder brindarte un apoyo más personali
                 db.add(tarea)
 
         db.commit()
+        logger.info("Conversación completada exitosamente")
 
-        return {"respuesta": contenido_ia, "tareas_generadas": tareas}
+        return {
+            "mensaje": {
+                "text": contenido_ia,
+                "isUser": False,
+                "esRecomendacion": mostrar_sugerencia_formulario
+            },
+            "tareas_generadas": tareas
+        }
 
     except Exception as e:
+        logger.error(f"Error en conversación con IA: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
-
+# ------------------ NUEVO ENDPOINT CON PAGINACIÓN ------------------
 @router.get("/chat/ia/historial/{usuario_id}")
-def obtener_historial_chat_usuario(usuario_id: str, db: Session = Depends(get_db)):
-    historial = obtener_historial_chat(db, usuario_id)
-    return [
-        {
-            "mensaje_usuario": h.mensaje_usuario,
-            "respuesta_ia": h.respuesta_ia,
-            "fecha": h.fecha.isoformat()
-        } for h in historial
-    ]
+def obtener_historial_chat_usuario(
+    usuario_id: str,
+    offset: int = 0,
+    limit: int = 10,
+    db: Session = Depends(get_db)
+):
+    logger.info(f"Obteniendo historial de chat para usuario: {usuario_id}, offset: {offset}, limit: {limit}")
+    
+    total = db.query(HistorialChat).filter_by(usuario_id=usuario_id).count()
+    logger.info(f"Total de mensajes en BD: {total}")
+    
+    # Para paginación correcta desde los mensajes más recientes
+    # Si offset=0, queremos los últimos 'limit' mensajes
+    # Si offset>0, queremos los mensajes más antiguos
+    if offset == 0:
+        # Primera página: obtener los últimos 'limit' mensajes
+        historial = db.query(HistorialChat)\
+            .filter_by(usuario_id=usuario_id)\
+            .order_by(HistorialChat.fecha.desc())\
+            .limit(limit)\
+            .all()
+        # Invertir para orden cronológico
+        historial = historial[::-1]
+    else:
+        # Páginas siguientes: obtener mensajes más antiguos
+        # Calculamos cuántos mensajes saltar desde el final
+        skip_count = total - offset
+        if skip_count < 0:
+            skip_count = 0
+            
+        historial = db.query(HistorialChat)\
+            .filter_by(usuario_id=usuario_id)\
+            .order_by(HistorialChat.fecha.asc())\
+            .offset(skip_count)\
+            .limit(limit)\
+            .all()
+
+    logger.info(f"Historial obtenido: {len(historial)} mensajes")
+    
+    return {
+        "total": total,
+        "cantidad": len(historial),
+        "mensajes": [
+            {
+                "mensaje_usuario": h.mensaje_usuario,
+                "respuesta_ia": h.respuesta_ia,
+                "fecha": h.fecha.isoformat()
+            } for h in historial
+        ]
+    }

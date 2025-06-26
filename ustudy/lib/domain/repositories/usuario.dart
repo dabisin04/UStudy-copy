@@ -9,4 +9,10 @@ abstract class UsuarioRepository {
   Future<void> deleteUser(String localId);
   Future<void> deleteAllUsers();
   Future<void> updateUId(String localId, String uId);
+  Future<String?> getCurrentUId(String localId);
+  Future<void> changePassword(
+    String localId,
+    String currentPassword,
+    String newPassword,
+  );
 }

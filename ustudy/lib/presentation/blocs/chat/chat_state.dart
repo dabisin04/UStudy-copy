@@ -13,13 +13,18 @@ class ChatInicial extends ChatEmocionalState {}
 class ChatCargando extends ChatEmocionalState {}
 
 class ChatRespuestaRecibida extends ChatEmocionalState {
-  final String respuesta;
+  final ChatMessage mensaje;
   final List<Map<String, dynamic>> tareasGeneradas;
+  final bool recomendarFormulario;
 
-  const ChatRespuestaRecibida(this.respuesta, this.tareasGeneradas);
+  const ChatRespuestaRecibida(
+    this.mensaje,
+    this.tareasGeneradas,
+    this.recomendarFormulario,
+  );
 
   @override
-  List<Object?> get props => [respuesta, tareasGeneradas];
+  List<Object?> get props => [mensaje, tareasGeneradas, recomendarFormulario];
 }
 
 class ChatError extends ChatEmocionalState {
@@ -35,9 +40,10 @@ class ChatHistorialCargando extends ChatEmocionalState {}
 
 class ChatHistorialCargado extends ChatEmocionalState {
   final List<ChatMessage> mensajes;
+  final int total;
 
-  const ChatHistorialCargado(this.mensajes);
+  const ChatHistorialCargado(this.mensajes, this.total);
 
   @override
-  List<Object?> get props => [mensajes];
+  List<Object?> get props => [mensajes, total];
 }

@@ -19,4 +19,8 @@ abstract class TareaRepository {
   Future<void> deleteTarea(String id);
   Future<void> syncWithServer();
   Future<void> clearLocalData();
+
+  // Nuevos métodos para sincronización bidireccional
+  Future<List<Tarea>> syncFromServer(String usuarioId);
+  Future<void> syncBidireccional(String usuarioId);
 }

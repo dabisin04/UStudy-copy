@@ -5,9 +5,11 @@ import 'package:ustudy/core/styles/apptheme.dart';
 
 import 'package:ustudy/domain/repositories/usuario.dart';
 import 'package:ustudy/domain/repositories/estado_psicologico.dart';
+import 'package:ustudy/domain/repositories/tareas.dart';
 
 import 'package:ustudy/infrastructure/adapters/usuario.dart';
 import 'package:ustudy/infrastructure/adapters/estado_psicologico.dart';
+import 'package:ustudy/infrastructure/adapters/tareas.dart';
 
 import 'package:ustudy/presentation/blocs/auth/auth_bloc.dart';
 import 'package:ustudy/presentation/blocs/auth/auth_event.dart';
@@ -15,8 +17,10 @@ import 'package:ustudy/presentation/blocs/auth/auth_state.dart';
 import 'package:ustudy/presentation/blocs/usuario/usuario_bloc.dart';
 import 'package:ustudy/presentation/blocs/estado_psicologico/estado_psicologico_bloc.dart';
 import 'package:ustudy/presentation/blocs/chat/chat_bloc.dart';
+import 'package:ustudy/presentation/blocs/tasks/tasks_bloc.dart';
 
 import 'package:ustudy/core/services/chat_service.dart';
+import 'package:ustudy/core/services/sqflite.dart';
 
 import 'package:ustudy/presentation/screens/splash.dart';
 import 'package:ustudy/presentation/screens/auth/login.dart';
@@ -26,17 +30,22 @@ import 'package:ustudy/presentation/screens/resources/article_webview.dart';
 import 'package:ustudy/presentation/screens/resources/resources.dart';
 import 'package:ustudy/presentation/screens/formulario/formulario.dart';
 import 'package:ustudy/presentation/screens/uni/select_u.dart';
+import 'package:ustudy/presentation/screens/chat/talkiebot.dart';
+import 'package:ustudy/presentation/screens/tasks/tasks.dart';
+import 'package:ustudy/presentation/screens/announcements/announcements_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   final usuarioRepository = UsuarioRepositoryImpl();
   final estadoPsicologicoRepository = EstadoPsicologicoRepositoryImpl();
-  final chatEmocionalRepository = ChatEmocionalService();
+  final tareaRepository = TareaRepositoryImpl();
 
   runApp(
     UStudyApp(
       usuarioRepository: usuarioRepository,
       estadoPsicologicoRepository: estadoPsicologicoRepository,
-      chatEmocionalRepository: chatEmocionalRepository,
+      tareaRepository: tareaRepository,
     ),
   );
 }
@@ -44,13 +53,13 @@ void main() {
 class UStudyApp extends StatelessWidget {
   final UsuarioRepository usuarioRepository;
   final EstadoPsicologicoRepository estadoPsicologicoRepository;
-  final ChatEmocionalService chatEmocionalRepository;
+  final TareaRepository tareaRepository;
 
   const UStudyApp({
     super.key,
     required this.usuarioRepository,
     required this.estadoPsicologicoRepository,
-    required this.chatEmocionalRepository,
+    required this.tareaRepository,
   });
 
   @override
@@ -61,9 +70,7 @@ class UStudyApp extends StatelessWidget {
         RepositoryProvider<EstadoPsicologicoRepository>.value(
           value: estadoPsicologicoRepository,
         ),
-        RepositoryProvider<ChatEmocionalService>.value(
-          value: chatEmocionalRepository,
-        ),
+        RepositoryProvider<TareaRepository>.value(value: tareaRepository),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -77,6 +84,7 @@ class UStudyApp extends StatelessWidget {
             create: (_) => EstadoPsicologicoBloc(estadoPsicologicoRepository),
           ),
           BlocProvider<ChatEmocionalBloc>(create: (_) => ChatEmocionalBloc()),
+          BlocProvider<TareaBloc>(create: (_) => TareaBloc(tareaRepository)),
         ],
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
@@ -108,7 +116,17 @@ class UStudyApp extends StatelessWidget {
                 title: args['title']!,
               );
             },
-            '/formulario': (_) => const FormularioPsicologicoPage(),
+            '/formulario-psicologico': (_) => const FormularioPsicologicoPage(),
+            '/chat-emocional': (_) => const ChatScreen(),
+            '/tasks': (context) {
+              final authState = context.read<AuthBloc>().state;
+              if (authState is AuthAuthenticated) {
+                return TareasScreen(usuarioId: authState.usuario.localId);
+              } else {
+                return const LoginScreen();
+              }
+            },
+            '/announcements': (_) => const AnnouncementsScreen(),
           },
         ),
       ),

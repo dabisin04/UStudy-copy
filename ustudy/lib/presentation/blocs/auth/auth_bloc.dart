@@ -14,6 +14,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthRegisterRequested>(_onRegister);
     on<AuthLogoutRequested>(_onLogout);
     on<AuthCheckSession>(_onCheckSession);
+    on<AuthChangePasswordRequested>(_onAuthChangePasswordRequested);
   }
 
   Future<void> _onLogin(
@@ -22,24 +23,25 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(AuthLoading());
     try {
-      final user = await usuarioRepository.login(
-        event.correo,
-        event.contrasena,
+      final usuario = await usuarioRepository.login(
+        event.email,
+        event.password,
       );
-      if (user != null) {
-        _usuarioActual = user;
+      if (usuario != null) {
+        _usuarioActual = usuario;
         await SessionService.saveUserSession(
-          localId: user.localId,
-          remoteId: user.remoteId,
-          nombre: user.nombre,
-          correo: user.correo,
+          localId: usuario.localId,
+          remoteId: usuario.remoteId,
+          nombre: usuario.nombre,
+          correo: usuario.correo,
+          uId: usuario.uId,
         );
-        emit(AuthAuthenticated(user));
+        emit(AuthAuthenticated(usuario));
       } else {
-        emit(AuthError("Credenciales incorrectas."));
+        emit(const AuthError('Credenciales incorrectas'));
       }
     } catch (e) {
-      emit(AuthError("Error al iniciar sesión: ${e.toString()}"));
+      emit(AuthError(e.toString()));
     }
   }
 
@@ -49,37 +51,37 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(AuthLoading());
     try {
-      await usuarioRepository.saveUser(
-        Usuario(
-          localId: '', // Se asignará luego tras el login
-          remoteId: null,
-          nombre: event.nombre,
-          correo: event.correo,
-          lastModified: DateTime.now(),
-          syncStatus: 'pending',
-        ),
-        event.contrasena,
+      final usuario = Usuario(
+        localId: '',
+        remoteId: '',
+        nombre: event.name,
+        correo: event.email,
+        lastModified: DateTime.now(),
+        syncStatus: 'pending',
+      );
+      await usuarioRepository.saveUser(usuario, event.password);
+
+      // Automatically login after successful registration
+      final loggedInUsuario = await usuarioRepository.login(
+        event.email,
+        event.password,
       );
 
-      // Iniciar sesión automático tras registrar
-      final user = await usuarioRepository.login(
-        event.correo,
-        event.contrasena,
-      );
-      if (user != null) {
-        _usuarioActual = user;
+      if (loggedInUsuario != null) {
+        _usuarioActual = loggedInUsuario;
         await SessionService.saveUserSession(
-          localId: user.localId,
-          remoteId: user.remoteId,
-          nombre: user.nombre,
-          correo: user.correo,
+          localId: loggedInUsuario.localId,
+          remoteId: loggedInUsuario.remoteId,
+          nombre: loggedInUsuario.nombre,
+          correo: loggedInUsuario.correo,
+          uId: loggedInUsuario.uId,
         );
-        emit(AuthAuthenticated(user));
+        emit(AuthAuthenticated(loggedInUsuario));
       } else {
-        emit(AuthError("Error al registrar."));
+        emit(const AuthError('Error al iniciar sesión después del registro'));
       }
     } catch (e) {
-      emit(AuthError("Error al registrar: ${e.toString()}"));
+      emit(AuthError(e.toString()));
     }
   }
 
@@ -106,11 +108,33 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         correo: session['correo']!,
         lastModified: DateTime.now(),
         syncStatus: 'synced',
+        uId: session['uId']!.isNotEmpty ? session['uId'] : null,
       );
       _usuarioActual = user;
       emit(AuthAuthenticated(user));
     } else {
       emit(AuthUnauthenticated());
+    }
+  }
+
+  Future<void> _onAuthChangePasswordRequested(
+    AuthChangePasswordRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    if (_usuarioActual == null) {
+      emit(const AuthPasswordChangeError('Usuario no autenticado'));
+      return;
+    }
+
+    try {
+      await usuarioRepository.changePassword(
+        _usuarioActual!.localId,
+        event.currentPassword,
+        event.newPassword,
+      );
+      emit(AuthPasswordChanged());
+    } catch (e) {
+      emit(AuthPasswordChangeError(e.toString()));
     }
   }
 

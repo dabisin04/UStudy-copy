@@ -6,6 +6,7 @@ import 'package:ustudy/presentation/blocs/estado_psicologico/estado_psicologico_
 import 'package:ustudy/presentation/blocs/estado_psicologico/estado_psicologico_event.dart';
 import 'package:ustudy/presentation/blocs/estado_psicologico/estado_psicologico_state.dart';
 import 'package:ustudy/presentation/widgets/formulario/pregunta_formulario.dart';
+import 'package:ustudy/infrastructure/utils/session.dart';
 
 class FormularioPsicologicoPage extends StatefulWidget {
   const FormularioPsicologicoPage({super.key});
@@ -47,20 +48,21 @@ class _FormularioPsicologicoPageState extends State<FormularioPsicologicoPage> {
       });
 
       // Buscar la siguiente pregunta no respondida
-      final pendiente = respuestas.entries
-          .firstWhere(
-            (e) => e.value == -1,
-            orElse: () => MapEntry(respuestas.length, -1),
-          )
-          .key;
+      int pendiente = 0;
+      for (int i = 0; i < preguntas.length; i++) {
+        if (respuestas[i] == null || respuestas[i] == -1) {
+          pendiente = i;
+          break;
+        }
+      }
 
       setState(() {
-        preguntaActual = pendiente < preguntas.length
-            ? pendiente
-            : respuestas.length;
+        preguntaActual = pendiente;
       });
     } else {
-      setState(() {});
+      setState(() {
+        preguntaActual = 0;
+      });
     }
   }
 
@@ -83,13 +85,36 @@ class _FormularioPsicologicoPageState extends State<FormularioPsicologicoPage> {
         preguntaActual++;
       });
     } else {
-      final prefs = await SharedPreferences.getInstance();
-      final usuarioId = prefs.getString('usuario_id');
+      // Verificar que todas las preguntas estén respondidas
+      bool todasRespondidas = true;
+      for (int i = 0; i < preguntas.length; i++) {
+        if (respuestas[i] == null || respuestas[i] == -1) {
+          todasRespondidas = false;
+          break;
+        }
+      }
 
-      if (usuarioId == null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Usuario no encontrado')));
+      if (!todasRespondidas) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Por favor responde todas las preguntas'),
+          ),
+        );
+        return;
+      }
+
+      // Obtener el usuario_id usando SessionService
+      final session = await SessionService.getUserSession();
+      final usuarioId = session?['remoteId'];
+
+      if (usuarioId == null || usuarioId.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Usuario no encontrado. Por favor, inicia sesión nuevamente.',
+            ),
+          ),
+        );
         return;
       }
 
@@ -109,6 +134,11 @@ class _FormularioPsicologicoPageState extends State<FormularioPsicologicoPage> {
   Widget build(BuildContext context) {
     if (preguntas.isEmpty) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    // Validar que preguntaActual esté dentro del rango válido
+    if (preguntaActual >= preguntas.length) {
+      preguntaActual = 0;
     }
 
     return BlocListener<EstadoPsicologicoBloc, EstadoPsicologicoState>(

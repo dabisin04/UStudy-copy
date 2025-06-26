@@ -21,6 +21,17 @@ class TareasCargadas extends TareaState {
   List<Object?> get props => [tareas];
 }
 
+class TareasSincronizadas extends TareaState {
+  final List<Tarea> nuevasTareas;
+
+  const TareasSincronizadas(this.nuevasTareas);
+
+  @override
+  List<Object?> get props => [nuevasTareas];
+}
+
+class TareaSincronizacionCompletada extends TareaState {}
+
 class TareaError extends TareaState {
   final String mensaje;
 

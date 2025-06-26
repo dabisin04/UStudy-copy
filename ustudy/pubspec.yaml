@@ -22,6 +22,9 @@ dependencies:
   webview_flutter: ^4.13.0
   webview_flutter_android: ^4.7.0
   webview_flutter_platform_interface: ^2.13.1
+  connectivity_plus: ^6.1.4
+  intl: ^0.20.2
+  uuid: ^4.5.1
 
 dev_dependencies:
   flutter_test:
@@ -37,3 +40,4 @@ flutter:
     - assets/data/unis.json
     - assets/logo.png
     - assets/data/preguntas_ia.json
+    - assets/data/announcements.json

@@ -1,0 +1,137 @@
+[
+  {
+    "id": "1",
+    "title": "Inicio del Semestre 2024-1",
+    "content": "El lunes 15 de enero inician las clases del semestre 2024-1. Revisa tu horario en el portal estudiantil.",
+    "date": "2024-01-10",
+    "priority": "high",
+    "category": "academic",
+    "university_id": "unilibre"
+  },
+  {
+    "id": "2",
+    "title": "Mantenimiento del Portal Estudiantil",
+    "content": "El portal estudiantil estará en mantenimiento el sábado 13 de enero de 8:00 AM a 2:00 PM.",
+    "date": "2024-01-08",
+    "priority": "medium",
+    "category": "technical",
+    "university_id": "unilibre"
+  },
+  {
+    "id": "3",
+    "title": "Conferencia: Inteligencia Artificial en la Educación",
+    "content": "No te pierdas la conferencia sobre IA en la educación este viernes 12 de enero a las 6:00 PM en el auditorio principal.",
+    "date": "2024-01-07",
+    "priority": "high",
+    "category": "event",
+    "university_id": "unilibre"
+  },
+  {
+    "id": "4",
+    "title": "Becas Disponibles para Estudiantes",
+    "content": "Se han abierto las convocatorias para becas de excelencia académica. Fecha límite: 20 de enero.",
+    "date": "2024-01-06",
+    "priority": "high",
+    "category": "financial",
+    "university_id": "unilibre"
+  },
+  {
+    "id": "5",
+    "title": "Horario de Biblioteca Extendido",
+    "content": "La biblioteca central amplía su horario de lunes a viernes hasta las 10:00 PM durante el semestre.",
+    "date": "2024-01-05",
+    "priority": "low",
+    "category": "services",
+    "university_id": "unilibre"
+  },
+  {
+    "id": "6",
+    "title": "Taller de Programación Python",
+    "content": "Inscríbete al taller gratuito de Python para principiantes. Inicia el 18 de enero.",
+    "date": "2024-01-04",
+    "priority": "medium",
+    "category": "academic",
+    "university_id": "unilibre"
+  },
+  {
+    "id": "7",
+    "title": "Campaña de Donación de Sangre",
+    "content": "Participa en la campaña de donación de sangre este miércoles 17 de enero en el centro médico universitario.",
+    "date": "2024-01-03",
+    "priority": "medium",
+    "category": "health",
+    "university_id": "unilibre"
+  },
+  {
+    "id": "8",
+    "title": "Nuevos Equipos en Laboratorios de Computación",
+    "content": "Los laboratorios de computación han sido actualizados con nuevos equipos de última generación.",
+    "date": "2024-01-02",
+    "priority": "low",
+    "category": "facilities",
+    "university_id": "unilibre"
+  },
+  {
+    "id": "9",
+    "title": "Semana de la Ingeniería 2024",
+    "content": "Del 20 al 24 de enero se realizará la Semana de la Ingeniería con talleres, conferencias y exposiciones.",
+    "date": "2024-01-09",
+    "priority": "high",
+    "category": "event",
+    "university_id": "unisimon"
+  },
+  {
+    "id": "10",
+    "title": "Actualización del Sistema de Calificaciones",
+    "content": "El sistema de calificaciones será actualizado el próximo lunes. Durante la actualización no se podrán consultar notas.",
+    "date": "2024-01-08",
+    "priority": "medium",
+    "category": "technical",
+    "university_id": "unisimon"
+  },
+  {
+    "id": "11",
+    "title": "Programa de Intercambio Estudiantil",
+    "content": "Abre la convocatoria para el programa de intercambio con universidades europeas. Fecha límite: 25 de enero.",
+    "date": "2024-01-07",
+    "priority": "high",
+    "category": "academic",
+    "university_id": "unisimon"
+  },
+  {
+    "id": "12",
+    "title": "Feria de Empleo Tecnológico",
+    "content": "La feria de empleo tecnológico se realizará el 22 de enero en el auditorio principal. Empresas líderes participarán.",
+    "date": "2024-01-06",
+    "priority": "high",
+    "category": "event",
+    "university_id": "unisimon"
+  },
+  {
+    "id": "13",
+    "title": "Mantenimiento de Laboratorios",
+    "content": "Los laboratorios de física estarán cerrados del 15 al 17 de enero por mantenimiento preventivo.",
+    "date": "2024-01-05",
+    "priority": "medium",
+    "category": "facilities",
+    "university_id": "unisimon"
+  },
+  {
+    "id": "14",
+    "title": "Taller de Emprendimiento",
+    "content": "Inscríbete al taller de emprendimiento tecnológico. Inicia el 19 de enero, cupos limitados.",
+    "date": "2024-01-04",
+    "priority": "medium",
+    "category": "academic",
+    "university_id": "unisimon"
+  },
+  {
+    "id": "15",
+    "title": "Anuncio General - Todas las Universidades",
+    "content": "Este es un anuncio que aparece para todas las universidades. Información general importante.",
+    "date": "2024-01-01",
+    "priority": "low",
+    "category": "general",
+    "university_id": "all"
+  }
+] 

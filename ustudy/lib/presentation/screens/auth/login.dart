@@ -76,8 +76,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           : () {
                               context.read<AuthBloc>().add(
                                 AuthLoginRequested(
-                                  correo: _correoController.text,
-                                  contrasena: _contrasenaController.text,
+                                  _correoController.text,
+                                  _contrasenaController.text,
                                 ),
                               );
                             },

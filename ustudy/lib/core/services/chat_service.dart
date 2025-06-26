@@ -17,10 +17,7 @@ class ChatEmocionalService {
     print('🔍 [ChatService] mensaje: "$mensaje"');
 
     final uri = Uri.parse('${ApiConstants.baseUrl}/chat/ia');
-    print('🔍 [ChatService] URL: $uri');
-
     final body = jsonEncode({'usuario_id': usuarioId, 'mensaje': mensaje});
-    print('🔍 [ChatService] Body: $body');
 
     try {
       final response = await http.post(
@@ -35,29 +32,35 @@ class ChatEmocionalService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         print('🔍 [ChatService] Data decodificada: $data');
+
+        final mensaje = data['mensaje'] as Map<String, dynamic>;
         return {
-          'respuesta': data['respuesta'] ?? '',
+          'respuesta': mensaje['text'] ?? '',
           'tareas_generadas': data['tareas_generadas'] ?? [],
+          'recomendar_formulario': mensaje['esRecomendacion'] ?? false,
         };
       } else {
         print('❌ [ChatService] Error HTTP: ${response.statusCode}');
         throw Exception('Error al comunicarse con la IA emocional');
       }
     } catch (e) {
-      print('❌ [ChatService] Excepción: $e');
       throw Exception('Error al comunicarse con la IA emocional: $e');
     }
   }
 
-  /// Carga el historial de conversación del usuario
-  static Future<List<ChatMessage>> obtenerHistorial({
+  /// Carga el historial de conversación del usuario con marcas de recomendación
+  static Future<Map<String, dynamic>> obtenerHistorial({
     required String usuarioId,
+    int offset = 0,
+    int limit = 10,
   }) async {
     print('🔍 [ChatService] obtenerHistorial() iniciado');
-    print('🔍 [ChatService] usuarioId: $usuarioId');
+    print(
+      '🔍 [ChatService] usuarioId: $usuarioId, offset: $offset, limit: $limit',
+    );
 
     final uri = Uri.parse(
-      '${ApiConstants.baseUrl}/chat/ia/historial/$usuarioId',
+      '${ApiConstants.baseUrl}/chat/ia/historial/$usuarioId?offset=$offset&limit=$limit',
     );
     print('🔍 [ChatService] URL historial: $uri');
 
@@ -67,18 +70,36 @@ class ChatEmocionalService {
       print('🔍 [ChatService] Response body historial: ${response.body}');
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as List;
-        print('🔍 [ChatService] Data historial: $data');
-        final mensajes = data
-            .expand<ChatMessage>(
-              (e) => [
-                ChatMessage(text: e['mensaje_usuario'], isUser: true),
-                ChatMessage(text: e['respuesta_ia'], isUser: false),
-              ],
-            )
-            .toList();
-        print('🔍 [ChatService] Mensajes procesados: ${mensajes.length}');
-        return mensajes;
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final total = data['total'] as int;
+        final cantidad = data['cantidad'] as int;
+        print(
+          '🔍 [ChatService] Total mensajes: $total, Cantidad recibida: $cantidad',
+        );
+
+        final List<ChatMessage> lista = [];
+
+        // Los mensajes ya vienen en orden cronológico correcto desde el backend
+        for (final e in data['mensajes'] as List) {
+          lista.add(ChatMessage(text: e['mensaje_usuario'], isUser: true));
+          lista.add(
+            ChatMessage(
+              text: e['respuesta_ia'],
+              isUser: false,
+              esRecomendacion: e['respuesta_ia'].toString().contains(
+                'evaluación emocional',
+              ),
+            ),
+          );
+        }
+
+        print('🔍 [ChatService] Mensajes procesados: ${lista.length}');
+        return {
+          'mensajes': lista,
+          'total': total,
+          'cantidad': cantidad,
+          'offset': offset,
+        };
       } else {
         print('❌ [ChatService] Error HTTP historial: ${response.statusCode}');
         throw Exception('Error al cargar historial de conversación');

@@ -13,6 +13,7 @@ class UsuarioBloc extends Bloc<UsuarioEvent, UsuarioState> {
     on<DeleteUsuarioRequested>(_onDeleteUsuario);
     on<DeleteAllUsuariosRequested>(_onDeleteAllUsuarios);
     on<UpdateUIdRequested>(_onUpdateUId);
+    on<GetCurrentUIdRequested>(_onGetCurrentUId);
   }
 
   // LoadUsuarioById
@@ -102,6 +103,22 @@ class UsuarioBloc extends Bloc<UsuarioEvent, UsuarioState> {
       emit(UsuarioUpdated());
     } catch (e) {
       emit(UsuarioError("Error al actualizar universidad: ${e.toString()}"));
+    }
+  }
+
+  // GetCurrentUIdRequested
+  Future<void> _onGetCurrentUId(
+    GetCurrentUIdRequested event,
+    Emitter<UsuarioState> emit,
+  ) async {
+    emit(UsuarioLoading());
+    try {
+      final uId = await usuarioRepository.getCurrentUId(event.localId);
+      emit(CurrentUIdLoaded(uId));
+    } catch (e) {
+      emit(
+        UsuarioError("Error al obtener universidad actual: ${e.toString()}"),
+      );
     }
   }
 }

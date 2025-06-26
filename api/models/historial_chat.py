@@ -14,3 +14,4 @@ class HistorialChat(Base):
     mensaje_usuario = Column(Text, nullable=False)
     respuesta_ia = Column(Text, nullable=False)
     fecha = Column(DateTime, default=datetime.utcnow)
+    recomendacion_formulario = Column(Boolean, default=False)

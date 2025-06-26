@@ -22,6 +22,11 @@ class UsuarioDeleted extends UsuarioState {}
 
 class AllUsuariosDeleted extends UsuarioState {}
 
+class CurrentUIdLoaded extends UsuarioState {
+  final String? uId;
+  CurrentUIdLoaded(this.uId);
+}
+
 class UsuarioError extends UsuarioState {
   final String message;
   UsuarioError(this.message);

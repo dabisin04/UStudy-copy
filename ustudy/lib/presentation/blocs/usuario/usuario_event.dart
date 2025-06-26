@@ -26,3 +26,8 @@ class UpdateUIdRequested extends UsuarioEvent {
   final String uId;
   UpdateUIdRequested({required this.localId, required this.uId});
 }
+
+class GetCurrentUIdRequested extends UsuarioEvent {
+  final String localId;
+  GetCurrentUIdRequested(this.localId);
+}
